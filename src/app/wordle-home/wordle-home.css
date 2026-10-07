@@ -1,0 +1,192 @@
+:host {
+    display: block;
+    min-height: 100vh;
+    color: #1a1a1b;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+.wordle-page {
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    max-width: 500px;
+    margin: 0 auto;
+    padding: 0 16px 24px;
+}
+
+.wordle-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 66px;
+    border-bottom: 1px solid #d3d6da;
+}
+
+.wordle-header h1 {
+    margin: 0;
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: 30px;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.game-area {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    gap: 32px;
+    padding: 32px 0 0;
+}
+
+.board {
+    display: grid;
+    gap: 5px;
+    width: min(330px, 100%);
+}
+
+.board-row {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 5px;
+}
+
+.squareBlock {
+    display: grid;
+    place-items: center;
+    aspect-ratio: 1;
+    border: 2px solid #d3d6da;
+    color: #1a1a1b;
+    font-size: 30px;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.keyboard {
+    display: grid;
+    gap: 8px;
+    width: 100%;
+    max-width: 500px;
+}
+
+.keyboard-row {
+    display: flex;
+    justify-content: center;
+    gap: 5px;
+    width: 100%;
+}
+
+.key {
+    flex: 1;
+    min-width: 0;
+    height: 56px;
+    padding: 0 4px;
+    border: 0;
+    border-radius: 4px;
+    background: #d3d6da;
+    color: #1a1a1b;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.wide-key {
+    flex: 1.5;
+    font-size: 11px;
+}
+
+.wide-key-backspace {
+    font-size: 20px;
+}
+
+.key:focus-visible {
+    outline: 2px solid #1a1a1b;
+    outline-offset: 2px;
+}
+
+.matched-Letter {
+    background-color: limegreen;
+    color: white;
+}
+
+.has-Letter {
+    background-color: orange;
+    color: white;
+}
+
+.wrong-Letter {
+    background-color: darkgray;
+    color: white;
+}
+
+.flipCell {
+    animation: flipCellAnimation 0.75s ease-in-out forwards;
+}
+
+@keyframes flipCellAnimation {
+  0% {
+    transform: rotateX(0deg);
+  }
+  
+  /* Halfway point: The cell is perpendicular/invisible to the screen */
+  50% {
+    transform: rotateX(180deg);
+  }
+  
+  /* 51% mark: Instant color switch occurs while hidden from view */
+  51% {
+    border-color: #d3d6da;
+  }
+  
+  100% {
+    transform: rotateX(360deg); /* Full flip rotation completed */
+  }
+}
+
+.shake-row {
+  /* Runs a quick 500ms horizontal snapping shuffle animation */
+  animation: shakeAnimation 0.6s ease-in-out;
+}
+
+@keyframes shakeAnimation {
+  0%, 100% { transform: translateX(0); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); } /* Snap Left */
+  20%, 40%, 60%, 80% { transform: translateX(5px); }      /* Snap Right */
+}
+
+@media (max-width: 480px) {
+    .wordle-page {
+        padding-right: 8px;
+        padding-left: 8px;
+    }
+
+    .game-area {
+        gap: 24px;
+        padding-top: 24px;
+    }
+
+    .board {
+        width: min(330px, calc(100vw - 32px));
+    }
+
+    .keyboard {
+        gap: 8px;
+    }
+
+    .keyboard-row {
+        gap: 4px;
+    }
+
+    .key {
+        height: 52px;
+        padding: 0 2px;
+        font-size: 12px;
+    }
+
+    .wide-key {
+        font-size: 10px;
+    }
+}

@@ -1,0 +1,75 @@
+:host {
+    position: fixed;
+    z-index: 1000;
+    inset: 0;
+    pointer-events: none;
+}
+
+.custom-modal-backdrop {
+    display: grid;
+    place-items: center;
+    box-sizing: border-box;
+    width: 100%;
+    height: 100%;
+    padding: 24px;
+    background: rgb(26 26 27 / 58%);
+    pointer-events: auto;
+}
+
+.custom-modal-dialog {
+    box-sizing: border-box;
+    width: min(100%, 400px);
+    padding: 28px 24px 24px;
+    border: 1px solid #d3d6da;
+    border-radius: 6px;
+    background: #fff;
+    color: #1a1a1b;
+    box-shadow: 0 16px 48px rgb(0 0 0 / 22%);
+    text-align: center;
+    pointer-events: auto;
+}
+
+.modal-message {
+    margin: 0;
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 1.4;
+    overflow-wrap: anywhere;
+}
+
+.modal-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 24px;
+}
+
+.modal-action {
+    min-height: 44px;
+    max-width: 100%;
+    padding: 10px 16px;
+    border: 0;
+    border-radius: 4px;
+    background: #517ebb;
+    color: white;
+    font: inherit;
+    font-weight: 700;
+    overflow-wrap: anywhere;
+    cursor: pointer;
+}
+
+.modal-action:focus-visible {
+    outline: 2px solid #1a1a1b;
+    outline-offset: 3px;
+}
+
+@media (max-width: 480px) {
+    .modal-dialog {
+        padding: 24px 18px 18px;
+    }
+
+    .modal-actions {
+        gap: 8px;
+    }
+}

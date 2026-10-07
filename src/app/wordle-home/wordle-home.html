@@ -1,0 +1,40 @@
+<main class="wordle-page">
+    <header class="wordle-header">
+        <h1>WORDLE</h1>
+    </header>
+
+    <section class="game-area" aria-label="Wordle game">
+        <div class="board" #boardElement role="grid" aria-label="6 rows, 5 letters per row">
+            @for (row of rowIndexes; track row) {
+                <div class="board-row" role="row">
+                    @for (col of colIndexes; track col) {
+                        <div class="squareBlock" role="gridcell">
+                            {{ letters[row][col] }}
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+
+        <div class="keyboard" #kbElement role="group" aria-label="On-screen keyboard">
+            @for (row of keyboardRows; track $index) {
+                <div class="keyboard-row">
+                    @for (key of row; track key.label) {
+                        <button
+                            class="key"
+                            [class.wide-key]="key.wide"
+                            [class.wide-key-backspace]="key.backspace"
+                            type="button"
+                            [attr.aria-label]="key.ariaLabel"
+                            [disabled]="!isWordReady"
+                            (click)="btnClicked(key.ariaLabel)">
+                            {{ key.label }}
+                        </button>
+                    }
+                </div>
+            }
+        </div>
+    </section>
+
+    <app-modal />
+</main>

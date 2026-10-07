@@ -1,0 +1,21 @@
+@if (modalService.currentModal(); as modal) {
+    <div class="custom-modal-backdrop">
+        <section class="custom-modal-dialog" role="dialog" aria-modal="true" aria-label="Wordle message">
+            <p class="modal-message">{{ modal.message }}</p>
+
+            @if (modal.actions?.length) {
+                <div class="modal-actions">
+                    @for (action of modal.actions; track action.id) {
+                        <button
+                            class="modal-action"
+                            [class]="action.className ?? ''"
+                            type="button"
+                            (click)="modalService.selectAction(action.id)">
+                            {{ action.label }}
+                        </button>
+                    }
+                </div>
+            }
+        </section>
+    </div>
+}
