@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Angular20App
 
 This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 20.3.28.
@@ -57,3 +58,7 @@ Angular CLI does not come with an end-to-end testing framework by default. You c
 ## Additional Resources
 
 For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+=======
+# Wordle
+A Wordle game replica. Still Beta version.
+>>>>>>> 8f9ea1efd0a50704040343296fda69e8f6db8fe2
