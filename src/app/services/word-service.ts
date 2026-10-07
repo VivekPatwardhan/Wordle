@@ -12,7 +12,7 @@ export class WordService {
 
   async loadWordBank()  {
     try {
-      const response = await fetch(`/wordle_words.json`)
+      const response = await fetch(`wordle_words.json`)
       this.wordBank = await response.json();
       // console.log(`Loaded ${this.wordBank.length} words locally.`);
     } catch (err) {
