@@ -12,7 +12,7 @@
     min-height: 100vh;
     max-width: 500px;
     margin: 0 auto;
-    padding: 0 16px 24px;
+    padding: 0 16px 12px;
 }
 
 .wordle-header {
@@ -93,6 +93,11 @@
     cursor: pointer;
 }
 
+.key:active {
+    background: #517ebb;
+    color: white;
+}
+
 .wide-key {
     flex: 1.5;
     font-size: 11px;
@@ -124,6 +129,13 @@
 
 .flipCell {
     animation: flipCellAnimation 0.75s ease-in-out forwards;
+}
+
+.footerAlignment {
+    align-self: center;
+    margin-top: 0.4rem;
+    font-size: small;
+    font-style: italic;
 }
 
 @keyframes flipCellAnimation {

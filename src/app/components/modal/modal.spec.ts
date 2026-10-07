@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { ModalService } from '../services/modal-service';
+import { ModalService } from '../../services/modal-service';
 import { ModalComponent } from './modal';
 
 describe('ModalComponent', () => {

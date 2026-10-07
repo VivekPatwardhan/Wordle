@@ -1,12 +1,14 @@
 import { Component, ElementRef, inject, OnDestroy, OnInit, Renderer2, ViewChild } from '@angular/core';
-import { WordService } from '../services/word-service';
-import { ModalService } from '../services/modal-service';
+import { WordService } from '../../services/word-service';
+import { ModalService } from '../../services/modal-service';
 import { ModalComponent } from '../modal/modal';
-import { skip, Subscription } from 'rxjs';
+import { Subscription } from 'rxjs';
+import Toast from 'bootstrap/js/dist/toast';
+import { Footer } from '../footer/footer';
 
 @Component({
   selector: 'app-wordle-home',
-  imports: [ModalComponent],
+  imports: [ModalComponent, Footer],
   templateUrl: './wordle-home.html',
   styleUrl: './wordle-home.css',
 })
@@ -28,6 +30,7 @@ export class WordleHome implements OnInit, OnDestroy {
 
   @ViewChild('boardElement', { static: false }) boardEleRef!: ElementRef;
   @ViewChild('kbElement', { static: false }) kbEleRef!: ElementRef;
+  @ViewChild('myToast', { static: false }) toastEleRef!: ElementRef;
 
   keyboardRows: { label: string; wide: boolean; backspace: boolean; ariaLabel: string }[][] = [
     'QWERTYUIOP'.split('').map((label) => ({ label, wide: false, backspace: false, ariaLabel: label })),
@@ -53,6 +56,7 @@ export class WordleHome implements OnInit, OnDestroy {
   private wordService = inject(WordService);
   private modalService = inject(ModalService);
   private actionSubscription?: Subscription;
+  private toastInstance!: Toast;
 
   ngOnInit(): void {
     if(!this.isBoardEngaged) {
@@ -150,12 +154,12 @@ export class WordleHome implements OnInit, OnDestroy {
           this.isGameOver = true;
           setTimeout(() => {
             this.modalService.open({
-            message: 'You were close!',
-            actions: [
-              { id: 'next-word', label: 'Next word' },
-              { id: 'reveal-word', label: 'Reveal word' },
-            ],
-          });
+                message: 'You were close!',
+                actions: [
+                  { id: 'next-word', label: 'Next word' },
+                  { id: 'reveal-word', label: 'Reveal word' },
+                ],
+              });
           }, 3000);
         }
       }
@@ -197,6 +201,7 @@ export class WordleHome implements OnInit, OnDestroy {
         setTimeout(() => {
           this.renderer.removeClass(currentRow, 'shake-row');
         }, 500);
+        this.showToast();
         break;
     }
   }
@@ -252,4 +257,21 @@ export class WordleHome implements OnInit, OnDestroy {
     });
     await this.wordService.getRandomWord();
   }
+
+  showToast() {
+    if (!this.toastInstance) {
+      this.toastInstance = new Toast(this.toastEleRef.nativeElement, {
+        autohide: true,
+        delay: 2000
+      });
+    }
+    this.toastInstance.show();
+  }
+
+  hideToast() {
+    if (this.toastInstance) {
+      this.toastInstance.hide();
+    }
+  }
+
 }
