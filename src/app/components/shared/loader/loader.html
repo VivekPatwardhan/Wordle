@@ -1,0 +1,12 @@
+<div class="loader-container" [class.overlay-mode]="overlay()" role="status" aria-live="polite">
+  <div class="loader-tiles" aria-hidden="true">
+    <div class="tile tile-1">W</div>
+    <div class="tile tile-2">O</div>
+    <div class="tile tile-3">R</div>
+    <div class="tile tile-4">D</div>
+    <div class="tile tile-5">S</div>
+  </div>
+  @if (message()) {
+    <p class="loader-message">{{ message() }}</p>
+  }
+</div>

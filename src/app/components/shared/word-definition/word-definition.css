@@ -1,0 +1,54 @@
+.definition {
+  margin-top: 18px;
+  padding: 14px 16px;
+  max-height: 40vh;
+  overflow-y: auto;
+  border-radius: 12px;
+  background: #f8fafc;
+  border: 1px solid var(--border-light, #e2e8f0);
+  text-align: left;
+}
+
+.word {
+  margin: 0 0 8px;
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+}
+
+.meaning + .meaning { margin-top: 10px; }
+
+.part-of-speech {
+  display: inline-block;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: #e0e7ff;
+  color: var(--color-indigo-hover, #4f46e5);
+  font-size: 0.72rem;
+  font-weight: 700;
+  font-style: italic;
+}
+
+ol {
+  margin: 6px 0 0;
+  padding-left: 1.2rem;
+  font-size: 0.86rem;
+  line-height: 1.45;
+}
+
+li + li { margin-top: 4px; }
+
+.muted {
+  margin: 0;
+  color: var(--text-muted, #64748b);
+  font-size: 0.85rem;
+  text-align: center;
+}
+
+.credit {
+  margin: 10px 0 0;
+  color: var(--text-muted, #64748b);
+  font-size: 0.7rem;
+}
+
+.credit a { color: inherit; }

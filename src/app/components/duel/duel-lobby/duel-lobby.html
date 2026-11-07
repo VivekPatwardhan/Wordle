@@ -1,0 +1,116 @@
+<main class="duel-page">
+  <app-header />
+
+  @if (loadError()) {
+    <section class="card center" role="alert">
+      <p class="error">{{ loadError() }}</p>
+      <a class="secondary" routerLink="/duel">Back to PvP</a>
+    </section>
+  } @else if (duel(); as d) {
+    @if (d.game && myId()) {
+      <!-- Both players are in: the duel itself. -->
+      @if (showIntro()) {
+        <app-versus-intro
+          [me]="me()?.username ?? 'You'"
+          [opponent]="opponent()?.username ?? 'Opponent'"
+          [heading]="d.mode === 'race' ? 'Best-of-' + d.totalRounds + ' race' : d.totalRounds + '-round duel'"
+          [subtitle]="d.mode === 'race' ? 'Same word for both — first to solve wins each round' : firstSetterName() + ' sets the first word'"
+          (done)="introDone()"
+        />
+      }
+      @if (d.mode === 'race') {
+        <app-race-arena class="arena" [duel]="d" [myId]="myId()!" (duelChange)="applyDuel($event)" />
+      } @else {
+        <app-duel-arena class="arena" [duel]="d" [myId]="myId()!" (duelChange)="applyDuel($event)" />
+      }
+      <a class="secondary" routerLink="/duel">Back to PvP</a>
+    } @else {
+    <header class="page-title">
+      @if (d.mode === 'race') {
+        <h1>Best-of-{{ d.totalRounds }} race</h1>
+        <p>You both race to solve the same word, chosen by the game. First to solve wins the round.</p>
+      } @else {
+        <h1>{{ d.totalRounds }}-round duel</h1>
+        <p>Each player sets the secret word in {{ d.totalRounds / 2 }} rounds and guesses in the other {{ d.totalRounds / 2 }}.</p>
+      }
+    </header>
+
+    <section class="card" aria-label="Players">
+      <div class="players">
+        <div class="player">
+          <span class="avatar" aria-hidden="true">{{ me()?.username?.[0]?.toUpperCase() ?? '?' }}</span>
+          <span>{{ me()?.username }} (you)</span>
+        </div>
+        <span class="versus" aria-hidden="true">VS</span>
+        <div class="player">
+          @if (opponent(); as o) {
+            <span class="avatar" aria-hidden="true">{{ o.username[0].toUpperCase() }}</span>
+            <span><button type="button" class="player-link" (click)="playerCard.open(o.userId)">{{ o.username }}</button> <app-presence-dot [userId]="o.userId" /></span>
+          } @else {
+            <span class="avatar empty" aria-hidden="true">?</span>
+            <span class="hint">Waiting…</span>
+          }
+        </div>
+      </div>
+    </section>
+
+    <section class="card" aria-live="polite">
+      @switch (d.lobbyState) {
+        @case ('waiting_for_opponent') {
+          @if (d.isCreator && link(); as url) {
+            <h2>Invite your opponent</h2>
+            <p class="hint">Send this link. Whoever opens it first sees the round count and can accept or decline.
+              @if (d.invite) { The link {{ formatExpiresIn(d.invite.expiresAt) }}. }
+            </p>
+            <div class="link-box">
+              <input type="text" readonly [value]="url" aria-label="Invite link" (focus)="$any($event.target).select()">
+              <button type="button" class="primary small" (click)="copyLink()">{{ copied() ? 'Copied!' : 'Copy' }}</button>
+              @if (canShare) {
+                <button type="button" class="secondary small" (click)="share()">Share</button>
+              }
+            </div>
+          } @else if (d.isCreator) {
+            <h2>Invite sent</h2>
+            <p class="hint">Waiting for your opponent to accept.</p>
+          } @else {
+            <h2>Waiting for the duel to start…</h2>
+          }
+          @if (d.isCreator) {
+            <div class="actions">
+              <button type="button" class="secondary" [disabled]="busy()" (click)="cancel()">Cancel duel</button>
+            </div>
+          }
+        }
+        @case ('ready') {
+          <h2>Both players are here!</h2>
+          <p class="hint">Starting round 1…</p>
+        }
+        @case ('declined') {
+          <h2>Invite declined</h2>
+          <p class="hint">{{ d.isCreator ? 'Your opponent declined this duel.' : 'You declined this duel.' }}</p>
+        }
+        @case ('cancelled') {
+          <h2>Duel cancelled</h2>
+          <p class="hint">This duel was withdrawn before it started.</p>
+        }
+        @case ('expired') {
+          <h2>Invite expired</h2>
+          <p class="hint">Nobody accepted within 24 hours. Start a new one to try again.</p>
+        }
+        @default {
+          <h2>Duel in progress</h2>
+        }
+      }
+      @if (actionError()) {
+        <p class="error" role="alert">{{ actionError() }}</p>
+      }
+    </section>
+
+    <a class="secondary" routerLink="/duel">Back to PvP</a>
+    }
+  } @else {
+    <p class="notice">Loading the duel…</p>
+  }
+
+  <app-footer />
+</main>

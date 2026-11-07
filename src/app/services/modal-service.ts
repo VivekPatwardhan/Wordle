@@ -1,5 +1,6 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable, Signal, signal } from '@angular/core';
 import { Subject } from 'rxjs';
+import { DefinitionState } from '../models/game';
 
 export interface ModalAction {
   id: string;
@@ -10,6 +11,8 @@ export interface ModalAction {
 export interface ModalConfig {
   message: string;
   actions?: ModalAction[];
+  /** Optional word definition, shown live as it loads (a signal, so the open modal updates). */
+  definition?: Signal<DefinitionState>;
 }
 
 @Injectable({

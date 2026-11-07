@@ -1,0 +1,143 @@
+<main class="login-page">
+  <app-header />
+
+  <section class="login-area" aria-label="Authentication Page">
+    <div class="brand-hero">
+      <div class="hero-tiles">
+        <span class="hero-tile tile-c">P</span>
+        <span class="hero-tile tile-p">L</span>
+        <span class="hero-tile tile-c">A</span>
+        <span class="hero-tile tile-a">Y</span>
+        <span class="hero-tile tile-c">!</span>
+      </div>
+      <p class="hero-subtitle">The classic word deduction game, reimagined.</p>
+    </div>
+
+    <div class="auth-card">
+      @if (isOtpStep) {
+        <div class="auth-card-header">
+          <h2>Verify your email</h2>
+          <p>Enter the 6-character code sent to {{ pendingEmail }}.</p>
+        </div>
+
+        <form [formGroup]="otpForm" (ngSubmit)="verifyOtp()" class="auth-form">
+          <div class="otp-inputs" formArrayName="otp" aria-label="Verification code">
+            @for (control of otpDigits.controls; track $index) {
+              <input
+                #otpInput
+                class="otp-input"
+                type="text"
+                inputmode="text"
+                maxlength="1"
+                autocomplete="one-time-code"
+                [formControlName]="$index"
+                [attr.aria-label]="'Verification character ' + ($index + 1)"
+                (input)="onOtpInput($event, $index)"
+                (keydown)="onOtpKeydown($event, $index)"
+                (paste)="onOtpPaste($event)"
+              >
+            }
+          </div>
+
+          <button type="submit" class="submit-btn" [disabled]="otpForm.invalid || isSubmitting">
+            {{ isSubmitting ? 'Verifying…' : 'Verify and Continue' }}
+          </button>
+
+          <button type="button" class="toggle-btn resend-btn" [disabled]="isSubmitting" (click)="resendOtp()">
+            Resend verification code
+          </button>
+
+          <button type="button" class="toggle-btn resend-btn" [disabled]="isSubmitting" (click)="backToSignIn()">
+            Back to sign in
+          </button>
+        </form>
+      } @else {
+        <div class="auth-card-header">
+          <h2>{{ isLoginMode ? 'Welcome Back!' : 'Join the Arena' }}</h2>
+          <p>{{ isLoginMode ? 'Sign in to track your stats and daily streak' : 'Create an account to start playing' }}</p>
+        </div>
+
+        <form [formGroup]="authForm" (ngSubmit)="onSubmit()" class="auth-form">
+          @if (!isLoginMode) {
+            <div class="form-group">
+              <label for="username">Player Tag</label>
+              <div class="input-wrapper">
+                <input id="username" type="text" formControlName="username" placeholder="Choose a username" autocomplete="username" maxlength="15">
+              </div>
+              @if (username.pending) {
+                <div class="field-hint" aria-live="polite">Checking availability…</div>
+              } @else if (username.dirty && username.valid) {
+                <div class="field-hint success-message" aria-live="polite">Username is available.</div>
+              }
+              @if ((username.touched || username.dirty) && username.invalid) {
+                <div class="error-message" aria-live="polite">
+                  @if (username.errors?.['required']) { <span>Username is required.</span> }
+                  @if (username.errors?.['pattern']) { <span>Use 3–15 letters, numbers, or spaces, including at least one letter or number.</span> }
+                  @if (username.errors?.['usernameTaken']) { <span>This username is already taken.</span> }
+                </div>
+              }
+            </div>
+          }
+
+          <div class="form-group">
+            <label for="email">{{ isLoginMode ? 'Email or Username' : 'Email Address' }}</label>
+            <div class="input-wrapper">
+              <input
+                [id]="isLoginMode ? 'email-or-username' : 'email'"
+                [type]="isLoginMode ? 'text' : 'email'"
+                formControlName="email"
+                [placeholder]="isLoginMode ? 'you@example.com or player tag' : 'you@example.com'"
+                [attr.autocomplete]="isLoginMode ? 'username' : 'email'"
+              >
+            </div>
+            @if (email.touched && email.invalid) {
+              <div class="error-message">
+                @if (email.errors?.['required']) { <span>{{ isLoginMode ? 'Email or username is required.' : 'Email is required.' }}</span> }
+                @if (email.errors?.['email']) { <span>Enter a valid email address.</span> }
+              </div>
+            }
+          </div>
+
+          <div class="form-group">
+            <label for="password">Password</label>
+            <div class="input-wrapper">
+              <input id="password" type="password" formControlName="password" placeholder="At least 8 characters" autocomplete="current-password">
+            </div>
+            @if (password.touched && password.invalid) {
+              <div class="error-message">
+                @if (password.errors?.['required']) { <span>Password is required.</span> }
+                @if (password.errors?.['minlength']) { <span>Password must be at least 8 characters.</span> }
+              </div>
+            }
+          </div>
+
+          <button type="submit" class="submit-btn" [disabled]="authForm.pending || isSubmitting">
+            <span>{{ isSubmitting ? 'Please wait…' : isLoginMode ? 'Sign In & Play' : 'Create Account' }}</span>
+          </button>
+
+          <div class="toggle-footer">
+            <span>{{ isLoginMode ? 'New to Wordle PvP?' : 'Already have an account?' }}</span>
+            <button type="button" class="toggle-btn" [disabled]="isSubmitting" (click)="toggleMode()">
+              {{ isLoginMode ? 'Register now' : 'Sign in instead' }}
+            </button>
+          </div>
+        </form>
+      }
+
+      @if (serverUnreachable()) {
+        <p class="status-message error-message" role="alert">
+          Can't reach the server. Check your connection — you may still be signed in.
+          <button type="button" class="toggle-btn" (click)="retryConnection()">Try again</button>
+        </p>
+      }
+
+      @if (statusMessage) {
+        <p class="status-message" [class.error-message]="isErrorMessage" [class.success-message]="!isErrorMessage" role="status" aria-live="polite">
+          {{ statusMessage }}
+        </p>
+      }
+    </div>
+  </section>
+
+  <app-footer />
+</main>

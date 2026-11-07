@@ -1,1 +1,87 @@
-/* You can add global styles to this file, and also import other style files */
+:root {
+  --font-game: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  
+  /* Cozy Indie Palette */
+  --bg-main: #f8fafc;
+  --bg-card: #ffffff;
+  --text-main: #0f172a;
+  --text-muted: #64748b;
+  --border-light: #e2e8f0;
+  --border-card: #cbd5e1;
+
+  /* Gameplay Feedback Tones (Tactile & Curated) */
+  --color-correct: #10b981;
+  --color-correct-border: #059669;
+  --color-present: #f59e0b;
+  --color-present-border: #d97706;
+  --color-absent: #64748b;
+  --color-absent-border: #475569;
+  --color-key-bg: #e2e8f0;
+  --color-key-shadow: #cbd5e1;
+
+  /* Accents */
+  --color-indigo: #6366f1;
+  --color-indigo-hover: #4f46e5;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: var(--font-game);
+  background-color: var(--bg-main);
+  color: var(--text-main);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+/* Minimal base rules that replace Bootstrap's "reboot" (Bootstrap was only used
+   for a toast, but its full 230 kB stylesheet shipped to every page). */
+body {
+  line-height: 1.5;
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  margin-top: 0;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  line-height: 1.2;
+}
+
+p {
+  margin-top: 0;
+  margin-bottom: 1rem;
+}
+
+button, input, select, textarea {
+  margin: 0;
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
+}
+
+button {
+  border-radius: 0;
+  text-transform: none;
+}
+
+button:not(:disabled), [type='button']:not(:disabled), [type='submit']:not(:disabled) {
+  cursor: pointer;
+}
+
+img, svg {
+  vertical-align: middle;
+}
+
+[hidden] {
+  display: none !important;
+}

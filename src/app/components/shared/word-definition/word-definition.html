@@ -1,0 +1,30 @@
+@let s = state();
+<section class="definition" aria-live="polite" aria-label="Word definition">
+  @if (s.status === 'loading') {
+    <p class="muted">Looking up the definition…</p>
+  } @else if (s.status === 'unavailable') {
+    <p class="muted">Definition unavailable right now.</p>
+  } @else {
+    <h3 class="word">{{ s.definition.word | uppercase }}</h3>
+    @if (s.definition.meanings.length === 0) {
+      <p class="muted">No definition found for this word.</p>
+    }
+    @for (meaning of s.definition.meanings; track meaning.partOfSpeech) {
+      <div class="meaning">
+        <span class="part-of-speech">{{ meaning.partOfSpeech }}</span>
+        <ol>
+          @for (text of meaning.definitions; track $index) {
+            <li>{{ text }}</li>
+          }
+        </ol>
+      </div>
+    }
+    @if (s.definition.found) {
+      <p class="credit">
+        Definition from
+        <a [href]="s.definition.source.url" target="_blank" rel="noopener noreferrer">{{ s.definition.source.name }}</a>,
+        <a [href]="s.definition.source.licenseUrl" target="_blank" rel="noopener noreferrer">{{ s.definition.source.license }}</a>
+      </p>
+    }
+  }
+</section>

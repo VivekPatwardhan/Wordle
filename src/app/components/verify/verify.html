@@ -1,0 +1,14 @@
+<main class="verify-page">
+  <app-header />
+  <section class="verify-card" aria-live="polite">
+    @if (isLoading) {
+      <span class="loading-spinner" aria-label="Verifying email"></span>
+    }
+    <h1>Email verification</h1>
+    <p [class.error-message]="isError">{{ message }}</p>
+    @if (isError) {
+      <a routerLink="/">Return to sign in</a>
+    }
+  </section>
+  <app-footer />
+</main>

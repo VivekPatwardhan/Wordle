@@ -1,0 +1,77 @@
+<main class="duel-page">
+  <app-header />
+
+  @if (loadError()) {
+    <section class="card center" role="alert">
+      <h2>Invite not found</h2>
+      <p class="error">{{ loadError() }}</p>
+      <a class="secondary" routerLink="/">Go to Wordle PvP</a>
+    </section>
+  } @else if (invite(); as i) {
+    <section class="card center" aria-live="polite">
+      <div class="players">
+        <div class="player">
+          <span class="avatar" aria-hidden="true">{{ i.inviter.username[0].toUpperCase() }}</span>
+        </div>
+      </div>
+      @if (i.mode === 'race') {
+        <h2>{{ i.inviter.username }} challenged you to a best-of-{{ i.totalRounds }} race</h2>
+        <p class="hint">
+          You both race to solve the same word, chosen by the game. First to solve wins the round —
+          and you'll see each other's progress live, as colours only.
+        </p>
+      } @else {
+        <h2>{{ i.inviter.username }} challenged you to a {{ i.totalRounds }}-round duel</h2>
+        <p class="hint">
+          You take turns: one sets a secret five-letter word, the other guesses it — then you swap.
+          Each of you sets the word in {{ i.totalRounds / 2 }} rounds.
+        </p>
+      }
+
+      @if (declined()) {
+        <p class="hint"><strong>You declined this invite.</strong></p>
+        <div class="actions"><a class="secondary" routerLink="/home">Go home</a></div>
+      } @else {
+        @switch (i.state) {
+          @case ('open') {
+            @switch (i.viewerRole) {
+              @case ('guest') {
+                <p class="hint">Sign in or create a free account to accept. You'll come straight back here.</p>
+                <div class="actions">
+                  <button type="button" class="primary" (click)="signIn()">Sign in or register</button>
+                </div>
+              }
+              @case ('invitee') {
+                <p class="hint">This invite {{ formatExpiresIn(i.expiresAt) }}.</p>
+                <div class="actions">
+                  <button type="button" class="primary" [disabled]="busy()" (click)="accept()">Accept duel</button>
+                  <button type="button" class="secondary" [disabled]="busy()" (click)="decline()">Decline</button>
+                </div>
+              }
+              @default {
+                <p class="error">This invite is for another player.</p>
+              }
+            }
+          }
+          @case ('accepted') {
+            <p class="hint"><strong>This invite has already been accepted.</strong></p>
+            @if (i.duelId) {
+              <div class="actions"><a class="primary" [routerLink]="['/duel', i.duelId]">Open the duel</a></div>
+            }
+          }
+          @case ('declined') { <p class="hint"><strong>This invite was declined.</strong></p> }
+          @case ('cancelled') { <p class="hint"><strong>{{ i.inviter.username }} cancelled this duel.</strong></p> }
+          @case ('expired') { <p class="hint"><strong>This invite has expired.</strong> Ask for a new link.</p> }
+        }
+      }
+
+      @if (actionError()) {
+        <p class="error" role="alert">{{ actionError() }}</p>
+      }
+    </section>
+  } @else {
+    <p class="notice">Opening the invite…</p>
+  }
+
+  <app-footer />
+</main>

@@ -1,0 +1,115 @@
+<div class="mode-switch" role="tablist" aria-label="PvP mode">
+  <button type="button" role="tab" [attr.aria-selected]="mode() === 'duel'" [class.active]="mode() === 'duel'" (click)="selectMode('duel')">⚔️ Duel</button>
+  <button type="button" role="tab" [attr.aria-selected]="mode() === 'race'" [class.active]="mode() === 'race'" (click)="selectMode('race')">🏁 Race</button>
+</div>
+
+@if (errorMessage()) {
+  <div class="box error" role="alert">
+    <p>{{ errorMessage() }}</p>
+    <button type="button" (click)="load()">Retry</button>
+  </div>
+} @else if (stats(); as s) {
+  @if (s.duels.played === 0) {
+    <div class="box">
+      <p>No finished {{ mode() === 'race' ? 'races' : 'duels' }} yet. Challenge a friend or find a random opponent to start your record.</p>
+      <a class="cta" routerLink="/duel">Go to PvP</a>
+    </div>
+  } @else {
+    <section class="tiles" aria-label="Summary">
+      <div class="tile"><strong>{{ s.duels.played }}</strong><span>{{ mode() === 'race' ? 'Races' : 'Duels' }}</span></div>
+      <div class="tile"><strong>{{ s.duels.winRate }}%</strong><span>Win rate</span></div>
+      @if (s.raceRounds; as r) {
+        <div class="tile"><strong>{{ r.winRate }}%</strong><span>Rounds won</span></div>
+        <div class="tile"><strong>{{ r.fastestSolve ?? '–' }}</strong><span>Fastest solve</span></div>
+      } @else {
+        <div class="tile"><strong>{{ s.asGuesser?.solveRate ?? 0 }}%</strong><span>Words solved</span></div>
+        <div class="tile"><strong>{{ s.asSetter?.survivalRate ?? 0 }}%</strong><span>Words survived</span></div>
+      }
+    </section>
+
+    <section class="panel" aria-labelledby="record-title">
+      <h2 id="record-title">Record</h2>
+      @let bar = recordBar(s);
+      <div class="record-bar" role="img"
+           [attr.aria-label]="s.duels.won + ' won, ' + s.duels.drawn + ' drawn, ' + s.duels.lost + ' lost'">
+        <span class="won" [style.width.%]="bar.won"></span>
+        <span class="drawn" [style.width.%]="bar.drawn"></span>
+        <span class="lost" [style.width.%]="bar.lost"></span>
+      </div>
+      <p class="legend">
+        <span><i class="won"></i>Won {{ s.duels.won }}</span>
+        <span><i class="drawn"></i>Drawn {{ s.duels.drawn }}</span>
+        <span><i class="lost"></i>Lost {{ s.duels.lost }}</span>
+        @if (s.duels.forfeits) { <span class="note">incl. {{ s.duels.forfeits }} forfeited</span> }
+      </p>
+    </section>
+
+    @if (s.raceRounds; as r) {
+      <section class="panel roles" aria-label="Race rounds">
+        <div>
+          <h2>Rounds</h2>
+          <p><strong>{{ r.won }}</strong> of {{ r.rounds }} won first</p>
+          <p class="note">{{ r.drawn }} drawn (nobody solved it)</p>
+        </div>
+        <div>
+          <h2>Speed</h2>
+          @if (r.averageGuesses !== null) {
+            <p><strong>{{ r.averageGuesses }}</strong> guesses per round won</p>
+            <p class="note">Fastest: {{ r.fastestSolve }} {{ r.fastestSolve === 1 ? 'guess' : 'guesses' }}</p>
+          } @else {
+            <p class="note">Win a round to see your speed</p>
+          }
+        </div>
+      </section>
+    } @else {
+      <section class="panel roles" aria-label="Roles">
+        <div>
+          <h2>As guesser</h2>
+          <p><strong>{{ s.asGuesser?.solved }}</strong> of {{ s.asGuesser?.rounds }} words solved</p>
+          @if (s.asGuesser?.averageGuesses !== null && s.asGuesser?.averageGuesses !== undefined) {
+            <p class="note">Avg {{ s.asGuesser?.averageGuesses }} guesses per solve</p>
+          }
+        </div>
+        <div>
+          <h2>As setter</h2>
+          <p><strong>{{ s.asSetter?.survived }}</strong> of {{ s.asSetter?.rounds }} words survived</p>
+          <p class="note">Your opponent failed to find them</p>
+        </div>
+      </section>
+    }
+
+    @if (s.headToHead.length) {
+      <section class="panel" aria-labelledby="h2h-title">
+        <h2 id="h2h-title">Head to head</h2>
+        <ul class="list">
+          @for (o of s.headToHead; track o.userId) {
+            <li>
+              <span class="who">
+                <button type="button" class="name-link" (click)="playerCard.open(o.userId)">{{ o.username }}</button>
+                <app-presence-dot [userId]="o.userId" />
+              </span>
+              <span class="score">
+                <b class="w">{{ o.won }}</b>–<b class="l">{{ o.lost }}</b>@if (o.drawn) {<span class="note"> · {{ o.drawn }} drawn</span>}
+              </span>
+            </li>
+          }
+        </ul>
+      </section>
+    }
+
+    <section class="panel" aria-labelledby="recent-title">
+      <h2 id="recent-title">Recent {{ mode() === 'race' ? 'races' : 'duels' }}</h2>
+      <ul class="list">
+        @for (d of s.recent; track d.duelId) {
+          <li>
+            <a class="who" [routerLink]="['/duel', d.duelId]">vs {{ d.opponent.username }}</a>
+            <span class="meta">{{ mode() === 'race' ? 'Best of ' + d.totalRounds : d.totalRounds + ' rounds' }} · {{ d.finishedAt | date: 'MMM d' }}{{ d.source === 'random' ? ' · random' : '' }}</span>
+            <span class="result" [class]="d.result">{{ resultLabels[d.result] }} {{ d.myRounds }}–{{ d.opponentRounds }}</span>
+          </li>
+        }
+      </ul>
+    </section>
+  }
+} @else if (isLoading()) {
+  <div class="box"><p>Loading…</p></div>
+}

@@ -1,0 +1,31 @@
+.race-boards { display: flex; align-items: flex-start; justify-content: center; gap: 12px; }
+.my-board { position: relative; flex: 0 1 280px; min-width: 0; }
+
+.opponent { display: flex; flex-direction: column; align-items: center; gap: 6px; padding-top: 4px; }
+.opponent-name { max-width: 76px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 0.72rem; font-weight: 700; color: var(--text-muted, #64748b); }
+
+.countdown {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  border-radius: 12px;
+  background: rgba(15, 23, 42, 0.78);
+  color: #fff;
+  font-weight: 700;
+}
+.countdown strong { font-size: 4rem; line-height: 1; animation: tick 1s ease-out infinite; }
+@keyframes tick { from { transform: scale(1.4); opacity: 0.4; } to { transform: scale(1); opacity: 1; } }
+
+.name-link { border: none; background: none; padding: 0; color: inherit; font: inherit; cursor: pointer; }
+
+.result-boards { display: flex; justify-content: center; gap: 12px; margin-top: 10px; }
+.result-boards figure { flex: 1; min-width: 0; margin: 0; }
+.result-boards figcaption { margin-bottom: 4px; font-size: 0.75rem; font-weight: 700; color: var(--text-muted, #64748b); }
+
+@media (prefers-reduced-motion: reduce) {
+  .countdown strong { animation: none; }
+}

@@ -1,0 +1,47 @@
+<main class="wordle-page">
+    <app-header />
+    @if (isLoading()) {
+    <app-loader />
+    }
+    @if (loadError()) {
+    <div class="load-error" role="alert">
+        <p>{{ loadError() }}</p>
+        <button type="button" class="load-error-btn" (click)="goHome()">Back to Home</button>
+    </div>
+    }
+    <section class="game-area" aria-label="Wordle game" [hidden]="!!loadError()">
+        <div class="board" #boardElement role="grid" aria-label="6 rows, 5 letters per row">
+            @for (row of rowIndexes; track row) {
+            <div class="board-row" role="row">
+                @for (col of colIndexes; track col) {
+                <div class="squareBlock" [ngClass]="getCellClass(row, col)" role="gridcell">
+                    {{ displayGrid()[row][col] }}
+                </div>
+                }
+            </div>
+            }
+        </div>
+        <div class="keyboard" #kbElement role="group" aria-label="On-screen keyboard">
+            @for (row of keyboardRows; track $index) {
+            <div class="keyboard-row">
+                @for (key of row; track key.label) {
+                <button class="key" [class.wide-key]="key.wide" [class.wide-key-backspace]="key.backspace"
+                    [ngClass]="keyboardStatus()[key.label]" type="button" [attr.aria-label]="key.ariaLabel"
+                    [disabled]="!isWordReady()" (click)="btnClicked(key.ariaLabel)">
+                    {{ key.label }}
+                </button>
+                }
+            </div>
+            }
+        </div>
+    </section>
+    <div class="game-toast-region" role="status" aria-live="polite" aria-atomic="true">
+        @if (toastMessage()) {
+        <button type="button" class="game-toast" (click)="hideToast()" aria-label="Dismiss message">
+            {{ toastMessage() }}
+        </button>
+        }
+    </div>
+    <app-modal />
+    <app-footer />
+</main>

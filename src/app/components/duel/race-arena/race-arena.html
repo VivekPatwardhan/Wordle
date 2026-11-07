@@ -1,0 +1,126 @@
+@let cur = current();
+@let fraction = timeFraction();
+
+<div class="timer-frame" [class.timed]="fraction !== null">
+  @if (fraction !== null) {
+    <app-time-ring [fraction]="fraction" [level]="timeLevel()" />
+  }
+  <section class="scoreboard" aria-label="Score">
+    <div class="side">
+      <span class="name">You</span>
+      <strong>{{ myScore()?.roundWins ?? 0 }}</strong>
+    </div>
+    <div class="mid">
+      @if (result()) {
+        <span>Final</span>
+      } @else {
+        <span>🏁 Race · Round {{ cur?.number ?? duel().currentRound }} / {{ duel().totalRounds }}</span>
+        @if (secondsLeft() !== null && startsIn() === 0) {
+          <span class="clock" [class.low]="secondsLeft()! <= 10" aria-live="off">⏱ {{ formatClock(secondsLeft()!) }}</span>
+        }
+      }
+    </div>
+    <div class="side">
+      @if (opponent(); as o) {
+        <button type="button" class="name name-link" (click)="playerCard.open(o.userId)">
+          {{ o.username }} <app-presence-dot [userId]="o.userId" />
+        </button>
+      }
+      <strong>{{ opponentScore()?.roundWins ?? 0 }}</strong>
+    </div>
+  </section>
+</div>
+
+<div class="stage">
+  @if (result()) {
+    <section class="card center final" aria-live="polite">
+      <h2>{{ finalHeadline() }}</h2>
+      <p class="hint">{{ finalReason() }}</p>
+      <ol class="round-list">
+        @for (round of game()?.rounds ?? []; track round.number) {
+          <li>
+            <span>R{{ round.number }}</span>
+            <span><strong>{{ round.secretWord.toUpperCase() }}</strong></span>
+            <span [class.win]="round.winnerId === myId()">{{ roundWinnerLabel(round) }}</span>
+          </li>
+        }
+      </ol>
+      <div class="actions centered">
+        <button type="button" class="primary" [disabled]="busy()" (click)="rematch()">Rematch</button>
+      </div>
+    </section>
+  } @else if (cur) {
+    <div class="race-boards">
+      <div class="my-board">
+        <app-duel-board [guesses]="cur.myGuesses" [draft]="draft()" [animateNewRows]="true" />
+        @if (startsIn() > 0) {
+          <div class="countdown" aria-live="assertive">
+            <span>Round {{ cur.number }} starts in</span>
+            <strong>{{ startsIn() }}</strong>
+          </div>
+        }
+      </div>
+      @if (opponent(); as o) {
+        <aside class="opponent" [attr.aria-label]="o.username + ' progress'">
+          <span class="opponent-name">{{ o.username }}</span>
+          <app-color-grid [rows]="cur.opponentRows" />
+        </aside>
+      }
+    </div>
+    @if (outOfGuesses()) {
+      <p class="role-note">Out of guesses — waiting to see if {{ opponent()?.username }} solves it…</p>
+    }
+  }
+  <app-reaction-lane [floaters]="floaters()" />
+</div>
+
+@if (!result() && cur) {
+  <app-duel-keyboard [guesses]="cur.myGuesses" [disabled]="!canType()" (pressed)="press($event)" />
+}
+
+@if (message()) {
+  <p class="message" role="alert">{{ message() }}</p>
+}
+
+@if (!result() && cur) {
+  <div class="reactions" role="group" aria-label="Send a reaction">
+    @for (emoji of reactions; track emoji) {
+      <button type="button" (click)="react(emoji)" [attr.aria-label]="'React ' + emoji">{{ emoji }}</button>
+    }
+  </div>
+  <div class="forfeits">
+    <button type="button" class="link" [disabled]="busy()" (click)="forfeit('round')">
+      {{ confirmForfeit() === 'round' ? 'Tap again to forfeit this round' : 'Forfeit round' }}
+    </button>
+    <button type="button" class="link danger" [disabled]="busy()" (click)="forfeit('duel')">
+      {{ confirmForfeit() === 'duel' ? 'Tap again to forfeit the whole race' : 'Forfeit race' }}
+    </button>
+  </div>
+}
+
+<p class="visually-hidden" aria-live="polite">{{ reactionAnnouncement() }}</p>
+
+@if (shownResult(); as round) {
+  <div class="overlay" role="dialog" aria-modal="true" aria-label="Round result">
+    <section class="result-card">
+      <p class="eyebrow">Round {{ round.number }}</p>
+      <h2>{{ roundHeadline(round) }}</h2>
+      <p>The word was <strong class="secret">{{ round.secretWord.toUpperCase() }}</strong></p>
+      <div class="result-boards">
+        <figure>
+          <figcaption>You</figcaption>
+          <app-duel-board class="compact" [guesses]="round.myGuesses"
+            [revealLastRow]="round.status === 'won' && round.winnerId === myId()" />
+        </figure>
+        <figure>
+          <figcaption>{{ opponent()?.username }}</figcaption>
+          <app-duel-board class="compact" [guesses]="round.opponentGuesses" />
+        </figure>
+      </div>
+      <app-word-definition [state]="resultDefinition()" />
+      <button type="button" class="primary wide" (click)="dismissResult()">
+        {{ result() ? 'See final result' : 'Next round' }}
+      </button>
+    </section>
+  </div>
+}
