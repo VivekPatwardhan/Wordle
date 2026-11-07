@@ -1,0 +1,71 @@
+@let f = friends.overview();
+<section class="card" aria-labelledby="friends-title">
+  <h2 id="friends-title">Friends{{ f?.friends?.length ? ' · ' + f!.friends.length : '' }}</h2>
+  <p class="hint">Friends see when you're online and can challenge you any time.</p>
+
+  <form class="add-form" (submit)="$event.preventDefault(); addByUsername()">
+    <input
+      type="text"
+      maxlength="15"
+      autocomplete="off"
+      placeholder="Add by exact username"
+      aria-label="Username to add"
+      [value]="username()"
+      (input)="username.set($any($event.target).value)"
+    >
+    <button type="submit" class="primary small" [disabled]="busy() || !username().trim()">Add</button>
+  </form>
+  @if (message(); as m) {
+    <p class="status" [class.ok]="m.ok" [class.error]="!m.ok" role="status">{{ m.text }}</p>
+  }
+
+  @if (f?.incoming?.length) {
+    <p class="sub">Requests for you</p>
+    <ul class="list">
+      @for (r of f!.incoming; track r.requestId) {
+        <li>
+          <div class="who"><strong>{{ r.from.username }}</strong></div>
+          <div class="row-actions">
+            <button type="button" class="primary small" [disabled]="busy()" (click)="accept(r.requestId)">Accept</button>
+            <button type="button" class="secondary small" [disabled]="busy()" (click)="removeRequest(r.requestId)">Decline</button>
+          </div>
+        </li>
+      }
+    </ul>
+  }
+
+  @if (f?.friends?.length) {
+    <ul class="list">
+      @for (friend of f!.friends; track friend.userId) {
+        <li>
+          <div class="who">
+            <button type="button" class="player-link" (click)="playerCard.open(friend.userId)">{{ friend.username }}</button>
+            <app-presence-dot [userId]="friend.userId" />
+          </div>
+          <div class="row-actions">
+            <button type="button" class="primary small" [disabled]="busy()" (click)="challenge.emit(friend.userId)">
+              {{ mode() === 'race' ? '🏁 Race' : '⚔️ Duel' }} ({{ rounds() }})
+            </button>
+            <button type="button" class="link danger" [disabled]="busy()" (click)="remove(friend.userId)">
+              {{ confirmRemove() === friend.userId ? 'Tap again' : 'Remove' }}
+            </button>
+          </div>
+        </li>
+      }
+    </ul>
+  } @else if (f && !f.incoming.length) {
+    <p class="hint" style="margin-top: 10px">No friends yet — add someone by username, or from your previous opponents.</p>
+  }
+
+  @if (f?.outgoing?.length) {
+    <p class="sub">Waiting for them to accept</p>
+    <ul class="list">
+      @for (r of f!.outgoing; track r.requestId) {
+        <li>
+          <div class="who">{{ r.to.username }}</div>
+          <button type="button" class="link" [disabled]="busy()" (click)="removeRequest(r.requestId)">Cancel</button>
+        </li>
+      }
+    </ul>
+  }
+</section>

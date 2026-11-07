@@ -1,0 +1,62 @@
+@if (service.openUserId() !== null) {
+  <div class="backdrop" (click)="close()" (keydown.escape)="close()" tabindex="-1">
+    <section class="card" role="dialog" aria-modal="true" aria-labelledby="player-card-name" (click)="$event.stopPropagation()">
+      <button type="button" class="close" (click)="close()" aria-label="Close">✕</button>
+
+      @if (error()) {
+        <p class="error" role="alert">{{ error() }}</p>
+      } @else if (card(); as c) {
+        <header>
+          <span class="avatar" aria-hidden="true">{{ c.username[0].toUpperCase() }}</span>
+          <div>
+            <h2 id="player-card-name">{{ c.username }} @if (!isSelf()) { <app-presence-dot [userId]="c.userId" /> }</h2>
+            @if (c.memberSince) { <p class="muted">Playing since {{ c.memberSince | date: 'MMM y' }}</p> }
+          </div>
+        </header>
+
+        <div class="records">
+          <div><strong>{{ c.solo.played }}</strong><span>Games · {{ c.solo.winRate }}% won</span></div>
+          <div><strong>{{ c.duel.played }}</strong><span>Duels · {{ c.duel.winRate }}% won</span></div>
+          <div><strong>{{ c.race.played }}</strong><span>Races · {{ c.race.winRate }}% won</span></div>
+          <div><strong>{{ c.solo.bestStreak }}</strong><span>Best daily streak</span></div>
+        </div>
+
+        @if (c.headToHead; as h) {
+          <div class="h2h">
+            <span class="label">You vs {{ c.username }}</span>
+            <span>⚔️ Duels <b class="w">{{ h.duel.won }}</b>–<b class="l">{{ h.duel.lost }}</b>@if (h.duel.drawn) {<i> · {{ h.duel.drawn }} drawn</i>}</span>
+            <span>🏁 Races <b class="w">{{ h.race.won }}</b>–<b class="l">{{ h.race.lost }}</b>@if (h.race.drawn) {<i> · {{ h.race.drawn }} drawn</i>}</span>
+          </div>
+        }
+
+        <div class="badges">
+          <span class="label">Achievements · {{ c.achievements.unlockedCount }} of {{ c.achievements.totalCount }}</span>
+          @if (c.achievements.unlocked.length) {
+            <ul>
+              @for (a of c.achievements.unlocked; track a.key) {
+                <li [title]="a.title + ' — ' + a.description"><span aria-hidden="true">{{ a.icon }}</span><span class="sr">{{ a.title }}</span></li>
+              }
+            </ul>
+          } @else {
+            <p class="muted">None unlocked yet.</p>
+          }
+        </div>
+
+        @if (!isSelf()) {
+          <div class="actions">
+            <button type="button" class="primary" [disabled]="busy()" (click)="challenge('duel')">⚔️ Duel (4)</button>
+            <button type="button" class="primary" [disabled]="busy()" (click)="challenge('race')">🏁 Race (3)</button>
+            @switch (relationship()) {
+              @case ('none') { <button type="button" class="secondary" [disabled]="busy()" (click)="addFriend()">+ Friend</button> }
+              @case ('request-sent') { <span class="muted">Friend request sent</span> }
+              @case ('friend') { <span class="muted">Friends ✓</span> }
+            }
+          </div>
+          @if (message()) { <p class="message" role="status">{{ message() }}</p> }
+        }
+      } @else {
+        <p class="muted">Loading…</p>
+      }
+    </section>
+  </div>
+}

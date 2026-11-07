@@ -1,0 +1,178 @@
+@let d = duel();
+@let cur = current();
+@let fraction = timeFraction();
+
+<div class="timer-frame" [class]="timeLevel()" [class.timed]="fraction !== null">
+  @if (fraction !== null) {
+    <!-- Time left: a border from top centre, shrinking anti-clockwise, green → red. -->
+    <app-time-ring [fraction]="fraction" [level]="timeLevel()" />
+  }
+<section class="scoreboard" aria-label="Score">
+  <div class="side">
+    <span class="name">You</span>
+    <strong>{{ myScore()?.roundWins ?? 0 }}</strong>
+  </div>
+  <div class="mid">
+    @if (result()) {
+      <span>Final</span>
+    } @else {
+      <span>Round {{ cur?.number ?? d.currentRound }} / {{ d.totalRounds }}</span>
+      @if (secondsLeft() !== null) {
+        <span class="clock" [class.low]="secondsLeft()! <= 10" aria-live="off">⏱ {{ formatClock(secondsLeft()!) }}</span>
+      }
+    }
+  </div>
+  <div class="side">
+    @if (opponent(); as o) {
+      <button type="button" class="name name-link" (click)="playerCard.open(o.userId)">
+        {{ o.username }} <app-presence-dot [userId]="o.userId" />
+      </button>
+    }
+    <strong>{{ opponentScore()?.roundWins ?? 0 }}</strong>
+  </div>
+</section>
+</div>
+
+<!-- The stage: whatever this phase focuses on (word card or board). Reactions
+     float up a lane along its right edge, from just below its bottom to its top. -->
+<div class="stage">
+@if (result()) {
+  <!-- ===== The end ===== -->
+  <section class="card center final" aria-live="polite">
+    <h2>{{ finalHeadline() }}</h2>
+    <p class="hint">{{ finalReason() }}
+      Guesses used: you {{ myScore()?.guessesUsed }}, {{ opponent()?.username }} {{ opponentScore()?.guessesUsed }}.</p>
+    <ol class="round-list">
+      @for (round of game()?.rounds ?? []; track round.number) {
+        <li>
+          <span>R{{ round.number }}</span>
+          @if (round.secretWord) {
+            <span>{{ usernameOf(round.setterId) }} set <strong>{{ round.secretWord.toUpperCase() }}</strong></span>
+          } @else {
+            <span>{{ round.setterId === myId() ? 'You' : usernameOf(round.setterId) }} didn't set a word</span>
+          }
+          <span [class.win]="round.winnerId === myId()">{{ round.winnerId === myId() ? 'You' : usernameOf(round.winnerId ?? 0) }}</span>
+        </li>
+      }
+    </ol>
+    <div class="actions centered">
+      <button type="button" class="primary" [disabled]="busy()" (click)="rematch()">Rematch</button>
+    </div>
+  </section>
+} @else if (cur) {
+  @if (cur.status === 'setting') {
+    <!-- ===== Setting the word ===== -->
+    @if (isSetter()) {
+      <section class="card">
+        <h2>Set a secret word</h2>
+        <p class="hint">Any real five-letter word. {{ opponent()?.username }} gets 6 guesses and 3 minutes to find it.</p>
+        <form class="word-form" (submit)="$event.preventDefault(); submitWord()">
+          <input
+            type="text"
+            inputmode="text"
+            autocomplete="off"
+            autocapitalize="characters"
+            spellcheck="false"
+            maxlength="5"
+            aria-label="Secret word"
+            placeholder="•••••"
+            [value]="wordInput()"
+            (input)="onWordInput($any($event.target).value)"
+          >
+          <button type="submit" class="primary" [disabled]="wordInput().length !== 5 || busy()">
+            {{ busy() ? 'Checking…' : 'Set word' }}
+          </button>
+        </form>
+      </section>
+    } @else {
+      <section class="card center">
+        <h2>{{ opponent()?.username }} is choosing a word…</h2>
+        <p class="hint">You'll have 6 guesses and 3 minutes once it's set.</p>
+      </section>
+    }
+  } @else {
+    <!-- ===== Guessing ===== -->
+    <p class="role-note" aria-live="polite">
+      @if (isGuesser()) {
+        👀 {{ opponent()?.username }} is watching you type
+      } @else {
+        Your word: <strong class="secret">{{ cur.secretWord?.toUpperCase() }}</strong> — watching {{ opponent()?.username }} live
+      }
+    </p>
+    <app-duel-board
+      [guesses]="cur.guesses"
+      [draft]="isGuesser() ? draft() : watchedDraft()"
+      [animateNewRows]="isGuesser()"
+    />
+  }
+}
+  <app-reaction-lane [floaters]="floaters()" />
+</div>
+
+@if (!result() && cur?.status === 'guessing' && isGuesser()) {
+  <app-duel-keyboard [guesses]="cur!.guesses" [disabled]="!canType()" (pressed)="press($event)" />
+}
+
+@if (message()) {
+  <p class="message" role="alert">{{ message() }}</p>
+}
+
+@if (!result() && cur) {
+  <!-- ===== Reactions ===== -->
+  <div class="reactions" role="group" aria-label="Send a reaction">
+    @for (emoji of reactions; track emoji) {
+      <button type="button" (click)="react(emoji)" [attr.aria-label]="'React ' + emoji">{{ emoji }}</button>
+    }
+  </div>
+
+  <!-- ===== Forfeits ===== -->
+  <div class="forfeits">
+    <button type="button" class="link" [disabled]="busy()" (click)="forfeit('round')">
+      {{ confirmForfeit() === 'round' ? 'Tap again to forfeit this round' : 'Forfeit round' }}
+    </button>
+    <button type="button" class="link danger" [disabled]="busy()" (click)="forfeit('duel')">
+      {{ confirmForfeit() === 'duel' ? 'Tap again to forfeit the whole duel' : 'Forfeit duel' }}
+    </button>
+  </div>
+}
+
+<p class="visually-hidden" aria-live="polite">{{ reactionAnnouncement() }}</p>
+
+@if (shownResult(); as round) {
+  <!-- ===== Round result ===== -->
+  <div class="overlay" role="dialog" aria-modal="true" aria-label="Round result">
+    <section class="result-card">
+      <p class="eyebrow">Round {{ round.number }}</p>
+      <h2>{{ roundHeadline(round) }}</h2>
+      @if (round.secretWord) {
+        <p>The word was <strong class="secret">{{ round.secretWord.toUpperCase() }}</strong></p>
+        @if (round.guesses.length) {
+          <!-- The round's final board; the guesser sees their last row flip. -->
+          <app-duel-board
+            class="compact"
+            [guesses]="round.guesses"
+            [revealLastRow]="round.guesserId === myId() && (round.status === 'solved' || round.status === 'failed')"
+          />
+        }
+      } @else {
+        <p class="hint">No word was set this round.</p>
+      }
+      @if (round.secretWord) {
+        <app-word-definition [state]="resultDefinition()" />
+      }
+      @if (round.guesserId === myId() && round.secretWord) {
+        <div class="moderation">
+          <button type="button" class="link" [disabled]="reportState() === 'sent'" (click)="report()">
+            {{ reportState() === 'sent' ? 'Reported — thanks' : 'Report this word' }}
+          </button>
+          <button type="button" class="link danger" [disabled]="blockState() === 'done'" (click)="block()">
+            {{ blockState() === 'done' ? 'Player blocked' : blockState() === 'confirm' ? 'Tap again to block' : 'Block player' }}
+          </button>
+        </div>
+      }
+      <button type="button" class="primary wide" (click)="dismissResult()">
+        {{ result() ? 'See final result' : 'Next round' }}
+      </button>
+    </section>
+  </div>
+}

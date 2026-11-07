@@ -1,0 +1,166 @@
+<main class="duel-page">
+  <app-header />
+
+  <header class="page-title">
+    <h1>PvP Duels</h1>
+    <p>Set a secret word for your opponent, then swap roles. Most rounds won takes the duel.</p>
+  </header>
+
+  @if (errorMessage()) {
+    <p class="notice error" role="alert">{{ errorMessage() }}</p>
+  }
+
+  <section class="card" aria-labelledby="new-duel-title">
+    <h2 id="new-duel-title">Start a game</h2>
+    <div class="mode-toggle" role="radiogroup" aria-label="Game mode">
+      <button type="button" role="radio" [attr.aria-checked]="mode() === 'duel'" [class.selected]="mode() === 'duel'" (click)="selectMode('duel')">
+        ⚔️ Duel
+      </button>
+      <button type="button" role="radio" [attr.aria-checked]="mode() === 'race'" [class.selected]="mode() === 'race'" (click)="selectMode('race')">
+        🏁 Race
+      </button>
+    </div>
+    <p class="hint">
+      @if (mode() === 'race') {
+        Same word for both of you, chosen by the game — first to solve wins the round. Best of:
+      } @else {
+        Set a word for each other, swapping roles each round. Number of rounds:
+      }
+    </p>
+    <div class="round-picker" role="radiogroup" aria-label="Number of rounds">
+      @for (option of roundOptions(); track option) {
+        <button
+          type="button"
+          role="radio"
+          [attr.aria-checked]="rounds() === option"
+          [class.selected]="rounds() === option"
+          (click)="rounds.set(option)"
+        >{{ option }}</button>
+      }
+    </div>
+    @let search = matchmaking.state();
+    @if (search.status === 'searching') {
+      <div class="searching" role="status" aria-live="polite">
+        <span class="spinner" aria-hidden="true"></span>
+        <div>
+          <strong>Looking for an opponent: {{ modeLabel(search.mode, search.totalRounds) }}…</strong>
+          <span class="meta">{{ elapsedLabel() }} · only players who chose the same are matched</span>
+        </div>
+        <button type="button" class="secondary small" (click)="matchmaking.cancel()">Cancel</button>
+      </div>
+    } @else {
+      <div class="actions">
+        <button type="button" class="primary" [disabled]="busy()" (click)="createInviteLink()">
+          Create invite link
+        </button>
+        <button type="button" class="secondary" [disabled]="busy()" (click)="findRandomOpponent()">
+          Find random opponent
+        </button>
+      </div>
+      @if (search.status === 'error') {
+        <p class="error" role="alert">{{ search.message }}</p>
+      }
+    }
+  </section>
+
+  @if (isLoading()) {
+    <p class="notice">Loading your duels…</p>
+  } @else if (hub(); as h) {
+    @if (h.incoming.length) {
+      <section class="card" aria-labelledby="incoming-title">
+        <h2 id="incoming-title">Invites for you</h2>
+        <ul class="list">
+          @for (invite of h.incoming; track invite.token) {
+            <li>
+              <div class="who">
+                <strong>{{ invite.inviter.username }}</strong>
+                <app-presence-dot [userId]="invite.inviter.userId" />
+                <span class="meta">{{ modeLabel(invite.mode, invite.totalRounds) }} · {{ formatExpiresIn(invite.expiresAt) }}</span>
+              </div>
+              <div class="row-actions">
+                <button type="button" class="primary small" [disabled]="busy()" (click)="accept(invite)">Accept</button>
+                <button type="button" class="secondary small" [disabled]="busy()" (click)="decline(invite)">Decline</button>
+              </div>
+            </li>
+          }
+        </ul>
+      </section>
+    }
+
+    @if (h.active.length) {
+      <section class="card" aria-labelledby="active-title">
+        <h2 id="active-title">Your duels</h2>
+        <ul class="list">
+          @for (duel of h.active; track duel.duelId) {
+            <li>
+              <div class="who">
+                <strong>vs</strong>
+                @if (duel.opponent) {
+                  <button type="button" class="player-link" (click)="playerCard.open(duel.opponent.userId)">{{ duel.opponent.username }}</button>
+                }
+                @if (duel.opponent) { <app-presence-dot [userId]="duel.opponent.userId" /> }
+                <span class="meta">{{ modeLabel(duel.mode, duel.totalRounds) }}</span>
+              </div>
+              <a class="primary small" [routerLink]="['/duel', duel.duelId]">Open</a>
+            </li>
+          }
+        </ul>
+      </section>
+    }
+
+    @if (h.outgoing.length) {
+      <section class="card" aria-labelledby="outgoing-title">
+        <h2 id="outgoing-title">Waiting for an answer</h2>
+        <ul class="list">
+          @for (invite of h.outgoing; track invite.duelId) {
+            <li>
+              <div class="who">
+                <strong>{{ invite.invitee ? 'To ' + invite.invitee.username : 'Invite link' }}</strong>
+                <span class="meta">{{ modeLabel(invite.mode, invite.totalRounds) }} · {{ formatExpiresIn(invite.expiresAt) }}</span>
+              </div>
+              <div class="row-actions">
+                <a class="secondary small" [routerLink]="['/duel', invite.duelId]">Lobby</a>
+                <button type="button" class="secondary small" [disabled]="busy()" (click)="cancel(invite.duelId)">Cancel</button>
+              </div>
+            </li>
+          }
+        </ul>
+      </section>
+    }
+
+    <section class="card" aria-labelledby="opponents-title">
+      <h2 id="opponents-title">Previous opponents</h2>
+      @if (h.opponents.length === 0) {
+        <p class="hint">Players you finish a duel with appear here, so you can challenge them again.</p>
+      } @else {
+        <ul class="list">
+          @for (opponent of h.opponents; track opponent.userId) {
+            <li>
+              <div class="who">
+                <button type="button" class="player-link" (click)="playerCard.open(opponent.userId)">{{ opponent.username }}</button>
+                <app-presence-dot [userId]="opponent.userId" />
+                <span class="meta">W {{ opponent.won }} · L {{ opponent.lost }} · D {{ opponent.drawn }}</span>
+              </div>
+              <div class="row-actions">
+                @switch (friends.relationshipWith(opponent.userId)) {
+                  @case ('none') {
+                    <button type="button" class="secondary small" [disabled]="busy()" (click)="addFriend(opponent.userId)">+ Friend</button>
+                  }
+                  @case ('request-sent') { <span class="meta-inline">Requested</span> }
+                  @case ('friend') { <span class="meta-inline">Friend ✓</span> }
+                }
+                <button type="button" class="primary small" [disabled]="busy()" (click)="challenge(opponent)">
+                  {{ mode() === 'race' ? '🏁 Race' : '⚔️ Duel' }} ({{ rounds() }})
+                </button>
+              </div>
+            </li>
+          }
+        </ul>
+      }
+    </section>
+
+    <app-friends-panel [rounds]="rounds()" [mode]="mode()" (challenge)="challengeUser($event)" />
+  }
+
+  <app-footer />
+</main>

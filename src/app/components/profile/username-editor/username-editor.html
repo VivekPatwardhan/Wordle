@@ -1,0 +1,53 @@
+@if (!isEditing()) {
+  @if (nextChangeAt(); as next) {
+    <p class="rename-note">You can change your username again on {{ next | date: 'MMM d, y, h:mm a' }}.</p>
+  } @else {
+    <button type="button" class="rename-link" (click)="startEditing()">Change username</button>
+  }
+  @if (successMessage()) {
+    <p class="rename-success" role="status">{{ successMessage() }}</p>
+  }
+} @else {
+  <form class="rename-form" [formGroup]="form" (ngSubmit)="save()">
+    <label for="new-username">New username</label>
+    <input
+      id="new-username"
+      type="text"
+      formControlName="username"
+      maxlength="15"
+      autocomplete="off"
+      placeholder="3–15 letters, numbers or spaces"
+    >
+
+    <p class="rename-caution">
+      You can change your username once every {{ cooldownDays }} days. If you save now, your next
+      change will be possible on {{ nextChangeIfSavedNow() | date: 'MMM d, y' }}.
+    </p>
+
+    <div aria-live="polite">
+      @if (username.pending) {
+        <p class="rename-hint">Checking availability…</p>
+      } @else if (username.dirty && username.valid) {
+        <p class="rename-hint ok">Username is available.</p>
+      }
+      @if ((username.dirty || username.touched) && username.invalid) {
+        <p class="rename-error">
+          @if (username.errors?.['required']) { Username is required. }
+          @if (username.errors?.['pattern']) { Use 3–15 letters, numbers, or spaces. }
+          @if (username.errors?.['usernameTaken']) { This username is already taken. }
+          @if (username.errors?.['sameAsCurrent']) { That is already your username. }
+        </p>
+      }
+      @if (errorMessage()) {
+        <p class="rename-error" role="alert">{{ errorMessage() }}</p>
+      }
+    </div>
+
+    <div class="rename-actions">
+      <button type="button" class="rename-cancel" [disabled]="isSaving()" (click)="cancel()">Cancel</button>
+      <button type="submit" class="rename-save" [disabled]="form.invalid || form.pending || isSaving()">
+        {{ isSaving() ? 'Saving…' : 'Save' }}
+      </button>
+    </div>
+  </form>
+}

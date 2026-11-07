@@ -1,0 +1,185 @@
+.wordle-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 60px;
+  padding: 8px 16px;
+  border-bottom: 1.5px solid var(--border-light, #e2e8f0);
+  background-color: rgba(255, 255, 255, 0.95);
+  /* backdrop-filter makes the header its own stacking context, so the menu's
+     z-index only counts inside it. Lift the whole header above page content —
+     e.g. flipped board tiles, which keep a transform and form their own layers. */
+  backdrop-filter: blur(8px);
+  position: relative;
+  z-index: 100;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+}
+
+.logo-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+  color: var(--text-main, #0f172a);
+  transition: transform 0.15s ease;
+}
+
+.logo-link:hover {
+  transform: translateY(-1px);
+}
+
+.logo-tile {
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  background-color: var(--color-correct, #10b981);
+  color: #ffffff;
+  border-radius: 6px;
+  font-weight: 800;
+  font-size: 1.15rem;
+  box-shadow: 0 2px 0 var(--color-correct-border, #059669);
+}
+
+.logo-text {
+  font-weight: 800;
+  font-size: 1.25rem;
+  letter-spacing: 2px;
+}
+
+.logo-badge {
+  background-color: #f1f5f9;
+  color: var(--color-indigo, #6366f1);
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 1px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  border: 1px solid #e2e8f0;
+}
+
+.header-right {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.user-chip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+  padding: 4px 10px 4px 4px;
+  background-color: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-main, #0f172a);
+}
+
+.user-avatar {
+  position: relative;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background-color: var(--color-indigo, #6366f1);
+  color: #ffffff;
+  display: grid;
+  place-items: center;
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+
+.avatar-dot {
+  position: absolute;
+  right: -4px;
+  bottom: -4px;
+}
+
+.user-name {
+  max-width: 100px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.user-chip:hover,
+.user-chip[aria-expanded='true'] {
+  background-color: #e2e8f0;
+}
+
+.chevron {
+  color: var(--text-muted, #64748b);
+  transition: transform 0.15s ease;
+}
+
+.chevron.open {
+  transform: rotate(180deg);
+}
+
+.user-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 50;
+  width: 220px;
+  max-width: calc(100vw - 32px);
+  padding: 6px;
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(15, 23, 42, 0.12);
+}
+
+.menu-identity {
+  display: flex;
+  flex-direction: column;
+  padding: 8px 10px 10px;
+  margin-bottom: 4px;
+  border-bottom: 1px solid #e2e8f0;
+  font-size: 0.85rem;
+}
+
+.menu-identity span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--text-muted, #64748b);
+  font-size: 0.78rem;
+}
+
+.menu-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 9px 10px;
+  border: none;
+  border-radius: 8px;
+  background: none;
+  color: var(--text-main, #0f172a);
+  font: inherit;
+  font-size: 0.88rem;
+  font-weight: 600;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.menu-item:hover,
+.menu-item:focus-visible {
+  background-color: #f1f5f9;
+}
+
+.menu-item.logout:hover,
+.menu-item.logout:focus-visible {
+  background-color: #fee2e2;
+  color: #dc2626;
+}

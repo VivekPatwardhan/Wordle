@@ -1,0 +1,63 @@
+<header class="wordle-header">
+  <div class="header-left">
+    <a routerLink="/home" class="logo-link" title="Wordle Home">
+      <span class="logo-tile">W</span>
+      <span class="logo-text">WORDLE</span>
+      <span class="logo-badge">PVP</span>
+    </a>
+  </div>
+
+  @if (this.authService.isLoggedIn) {
+    <div class="header-right">
+      <button
+        type="button"
+        class="user-chip"
+        aria-haspopup="menu"
+        aria-controls="user-menu"
+        [attr.aria-expanded]="isMenuOpen()"
+        (click)="toggleMenu()"
+      >
+        <span class="user-avatar">
+          {{ (this.authService.currentUser()?.username?.[0] ?? this.authService.currentUser()?.email?.[0] ?? 'P') | uppercase }}
+          <app-status-dot class="avatar-dot" [state]="realtime.status()" [label]="connectionLabel()" />
+        </span>
+        <span class="user-name">{{ this.authService.currentUser()?.username ?? this.authService.currentUser()?.email?.split('@')?.[0] }}</span>
+        <svg class="chevron" [class.open]="isMenuOpen()" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <polyline points="6 9 12 15 18 9"></polyline>
+        </svg>
+      </button>
+
+      @if (isMenuOpen()) {
+        <div id="user-menu" class="user-menu" role="menu">
+          <div class="menu-identity">
+            <strong>{{ this.authService.currentUser()?.username }}</strong>
+            <span>{{ this.authService.currentUser()?.email }}</span>
+          </div>
+          <a role="menuitem" routerLink="/profile" class="menu-item" (click)="closeMenu()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+              <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+            My profile
+          </a>
+          <button type="button" role="menuitem" class="menu-item logout" (click)="logOut()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+              <polyline points="16 17 21 12 16 7"></polyline>
+              <line x1="21" y1="12" x2="9" y2="12"></line>
+            </svg>
+            Log out
+          </button>
+        </div>
+      }
+    </div>
+  }
+</header>
+
+@if (this.authService.isLoggedIn) {
+  <app-invite-notice />
+  <app-achievement-toast />
+  @if (playerCard.openUserId() !== null) {
+    <app-player-card />
+  }
+}

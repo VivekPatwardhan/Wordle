@@ -1,0 +1,101 @@
+<main class="profile-page">
+  <app-header />
+
+  <section class="profile-card" aria-label="Player">
+    <span class="avatar" aria-hidden="true">{{ displayName()[0] | uppercase }}</span>
+    <div class="identity">
+      <h1>{{ displayName() }}</h1>
+      <p>{{ user()?.email }}</p>
+      @if (user()?.created_at) {
+        <p class="member-since">Playing since {{ user()?.created_at | date: 'MMM y' }}</p>
+      }
+      <app-username-editor />
+    </div>
+  </section>
+
+  <div class="mode-toggle" role="tablist" aria-label="Statistics for">
+    @for (option of modes; track option.id) {
+      <button
+        type="button"
+        role="tab"
+        [attr.aria-selected]="mode() === option.id"
+        [class.active]="mode() === option.id"
+        (click)="selectMode(option.id)"
+      >
+        {{ option.label }}
+      </button>
+    }
+  </div>
+
+  @if (mode() === 'pvp') {
+    <app-profile-pvp />
+  } @else if (mode() === 'awards') {
+    <app-profile-achievements />
+  } @else if (errorMessage()) {
+    <div class="state-box error" role="alert">
+      <p>{{ errorMessage() }}</p>
+      <button type="button" (click)="loadStats()">Retry</button>
+    </div>
+  } @else if (stats(); as s) {
+    <div class="stats-body" [class.is-refreshing]="isLoading()" [attr.aria-busy]="isLoading()">
+      <section class="tiles" aria-label="Summary">
+        <div class="tile"><strong>{{ s.played }}</strong><span>Played</span></div>
+        <div class="tile"><strong>{{ s.winRate }}%</strong><span>Win rate</span></div>
+        <div class="tile"><strong>{{ s.streak.current }}</strong><span>Daily streak</span></div>
+        <div class="tile"><strong>{{ s.streak.best }}</strong><span>Best streak</span></div>
+      </section>
+
+      @if (s.played === 0) {
+        <div class="state-box">
+          <p>No finished {{ mode() === 'all' ? '' : mode() + ' ' }}games yet. Finish a game to see your stats here.</p>
+        </div>
+      } @else {
+        <section class="panel" aria-labelledby="distribution-title">
+          <div class="panel-head">
+            <h2 id="distribution-title">Guess distribution</h2>
+            @if (s.averageGuesses !== null) {
+              <span class="panel-note">Avg {{ s.averageGuesses }} guesses per win</span>
+            }
+          </div>
+          <ol class="bars">
+            @for (bar of distributionBars(); track bar.guesses) {
+              <li
+                class="bar-row"
+                [title]="'Solved in ' + bar.guesses + ': ' + bar.count + (bar.count === 1 ? ' game' : ' games')"
+              >
+                <span class="bar-label">{{ bar.guesses }}</span>
+                <span class="bar-track">
+                  <span
+                    class="bar"
+                    [class.top]="bar.isMostCommon"
+                    [style.width.%]="bar.widthPercent"
+                  ></span>
+                  <span class="bar-count">{{ bar.count }}</span>
+                </span>
+              </li>
+            }
+          </ol>
+          <p class="panel-note">Lost: {{ s.lost }}</p>
+        </section>
+      }
+
+      @if (s.openingWord) {
+        <section class="panel" aria-labelledby="opener-title">
+          <div class="panel-head">
+            <h2 id="opener-title">Favourite opening word</h2>
+            <span class="panel-note">Used {{ s.openingWord.timesUsed }}×</span>
+          </div>
+          <div class="opener" [attr.aria-label]="s.openingWord.word">
+            @for (letter of openingLetters(); track $index) {
+              <span class="opener-tile" aria-hidden="true">{{ letter }}</span>
+            }
+          </div>
+        </section>
+      }
+    </div>
+  } @else if (isLoading()) {
+    <div class="state-box"><p>Loading your stats…</p></div>
+  }
+
+  <app-footer />
+</main>
